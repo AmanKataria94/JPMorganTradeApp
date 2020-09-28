@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { placeOrder } from '../actions';
-import { Layout, Dropdown, Menu, Row, Col, InputNumber, Button } from 'antd';
+import { placeOrder, setUpdated } from '../actions';
+import { Layout, Dropdown, Menu, Row, Col, InputNumber, Button, Spin } from 'antd';
 import { DownOutlined, UserOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
 import Api from '../network/api';
@@ -37,7 +37,8 @@ class OrderEntry extends Component {
             tif: this.tifs.day,
             selectedPrice: -1,
             stopPrice: -1,
-            comment: ''
+            comment: '',
+            placingOrder: false
         };
         this.api = new Api();
         this.signal = axios.CancelToken.source();
@@ -46,7 +47,6 @@ class OrderEntry extends Component {
 
     componentDidMount() {
         setInterval(() => { this.loadSelected(this.state.selected); }, this.refreshRateMillis);
-
     }
 
     componentWillUnmount() {
@@ -62,6 +62,7 @@ class OrderEntry extends Component {
         catch (err) {
             if (axios.isCancel(err)) {
                 console.log('Error: ', err.message);
+                this.loadSelected(selected);
             }
         }
     }
@@ -76,9 +77,15 @@ class OrderEntry extends Component {
             tif: this.state.tif,
             stopPrice: this.state.stopPrice,
             comment: this.state.comment
-        }
+        };
 
-        this.props.placeOrder(order)
+        this.setState({ placingOrder: true });
+
+        setTimeout(() => {
+            this.props.placeOrder(order);
+            this.props.setUpdated(new Date());
+            this.setState({ placingOrder: false });
+        }, 2000)
     }
 
     getDisabled() {
@@ -86,7 +93,6 @@ class OrderEntry extends Component {
     }
 
     render() {
-        console.log(this.state);
         return (
             <Layout>
                 <Header> EXD Trader Order Entry </Header>
@@ -106,7 +112,13 @@ class OrderEntry extends Component {
                         </Col>
                         <Col span={6}>
                             Quantity:
-                            <InputNumber min={0.01} max={999} step={0.01} defaultValue={100} />
+                            <InputNumber
+                                min={0.01}
+                                max={999}
+                                step={0.01}
+                                defaultValue={100}
+                                onChange={(quantity) => this.setState({ quantity })}
+                            />
                         </Col>
                         <Col span={6}>
                             Price:
@@ -147,7 +159,11 @@ class OrderEntry extends Component {
                     </Row>
                     <Row>
                         <Col span={12}>
-                            <TextArea placeholder="<COMMENT>" />
+                            <TextArea placeholder="<COMMENT>" onChange={(event) => {
+                                console.log(event.target.value);
+                                this.setState({ comment: event.target.value })
+                            }
+                            } />
                         </Col>
                         <Col span={6} offset={6}>
                             <Button
@@ -159,9 +175,17 @@ class OrderEntry extends Component {
                             </Button>
                         </Col>
                     </Row>
+                    {this.spin()}
                 </Content>
             </Layout>
         )
+    }
+
+    spin() {
+        return this.state.placingOrder ? (
+            <Spin tip="placing order..." />
+        )
+            : null
     }
 
     actionMenu() {
@@ -232,7 +256,8 @@ class OrderEntry extends Component {
 }
 
 const mapDispatchToProps = dispatch => ({
-    placeOrder: order => dispatch(placeOrder(order))
+    placeOrder: order => dispatch(placeOrder(order)),
+    setUpdated: lastUpdated => dispatch(setUpdated(lastUpdated))
 })
 
 export default connect(null, mapDispatchToProps)(OrderEntry);

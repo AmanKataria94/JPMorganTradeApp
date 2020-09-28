@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { AgGridReact } from 'ag-grid-react';
 
 import 'ag-grid-community/dist/styles/ag-grid.css';
-import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
+import 'ag-grid-community/dist/styles/ag-theme-balham.css';
 
 const { Header, Content } = Layout;
 
@@ -15,7 +15,7 @@ class OrderBlotter extends Component {
             { headerName: 'Action', field: 'action' },
             { headerName: 'Symbol', field: 'symbol' },
             { headerName: 'Qty', field: 'quantity' },
-            { headerName: 'OrderTyp', field: 'orderType' },
+            { headerName: 'Order Type', field: 'orderType' },
             { headerName: 'TIF', field: 'tif' },
             { headerName: 'Price', field: 'price' },
             { headerName: 'Stop Price', field: 'stopPrice' },
@@ -24,16 +24,23 @@ class OrderBlotter extends Component {
     }
 
     render() {
+        const lastUpdated = this.props.lastUpdated ? this.props.lastUpdated.toString() : 'N/A'
+
         return (
             <div>
                 <Menu>
-                    <Header> Order Blotter </Header>
+                    <Header> Order Blotter &nbsp; &nbsp; &nbsp; &nbsp;
+                            Last Updated: {lastUpdated}
+                    </Header>
                 </Menu>
-                <div class="ag-theme-alpine">
+                <div class="ag-theme-balham">
                     <AgGridReact
                         columnDefs={this.columnHeaders}
                         rowData={this.props.orders}
-                        style={{ height: "100vh" }}
+                        rowBuffer={0}
+                        alwaysShowVerticalScroll={true}
+                    // pagination={true}
+                    // paginationPageSize={2}
                     />
                 </div>
             </div>
@@ -42,7 +49,10 @@ class OrderBlotter extends Component {
 }
 
 const mapStateToProps = (state) => {
-    return { orders: state.placeOrder }
+    return {
+        orders: state.placeOrder,
+        lastUpdated: state.lastUpdated
+    }
 }
 
 export default connect(mapStateToProps)(OrderBlotter);
