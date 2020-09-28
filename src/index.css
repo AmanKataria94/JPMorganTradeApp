@@ -1,0 +1,27 @@
+@import 'antd/dist/antd.css';
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.ant-divider{
+  color: black;
+}
+
+.ant-layout-header{
+  color: aliceblue;
+}
+
+.ant-col{
+  display: grid;
+}
+
+.ant-row{
+  margin-left: 1%;
+  margin-top: 1%;
+}
+
+.ag-root-wrapper.ag-layout-normal{
+  height: 100vh;
+}
