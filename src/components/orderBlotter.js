@@ -28,19 +28,18 @@ class OrderBlotter extends Component {
 
         return (
             <div>
-                <Menu>
-                    <Header> Order Blotter &nbsp; &nbsp; &nbsp; &nbsp;
-                            Last Updated: {lastUpdated}
+                <div style={{ display: "flex" }}>
+                    <Header style={{ width: "50%" }}>
+                        Order Blotter
                     </Header>
-                </Menu>
-                <div class="ag-theme-balham">
+                    <Header style={{ width: "50%" }}>
+                        Last Updated: {lastUpdated}
+                    </Header>
+                </div>
+                <div className="ag-theme-balham">
                     <AgGridReact
                         columnDefs={this.columnHeaders}
                         rowData={this.props.orders}
-                        rowBuffer={0}
-                        alwaysShowVerticalScroll={true}
-                    // pagination={true}
-                    // paginationPageSize={2}
                     />
                 </div>
             </div>

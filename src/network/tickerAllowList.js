@@ -2,5 +2,12 @@ export default [
     "TSLA",
     "AAPL",
     "IBM",
-    "JPM"
+    "JPM",
+    "NFLX",
+    "GOOGL",
+    "VZ",
+    "FB",
+    "AMZN",
+    "EBAY",
+    "TWTR"
 ]

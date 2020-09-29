@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { placeOrder, setUpdated } from '../actions';
-import { Layout, Dropdown, Menu, Row, Col, InputNumber, Button, Spin } from 'antd';
-import { DownOutlined, UserOutlined } from '@ant-design/icons';
+import { AutoComplete, Layout, Dropdown, Menu, Row, Col, InputNumber, Button, Spin } from 'antd';
 import { Input } from 'antd';
 import Api from '../network/api';
 import axios from 'axios';
@@ -38,14 +37,23 @@ class OrderEntry extends Component {
             selectedPrice: -1,
             stopPrice: -1,
             comment: '',
-            placingOrder: false
+            placingOrder: false,
+            searchField: symbols[0],
+            searchDatasource: []
         };
+
         this.api = new Api();
         this.signal = axios.CancelToken.source();
         this.refreshRateMillis = 30000;
+        this.submitOrder = this.submitOrder.bind(this);
+        this.onSearchInput = this.onSearchInput.bind(this);
+        this.onSearch = this.onSearch.bind(this);
+        this.setNearestSearchResult = this.setNearestSearchResult.bind(this);
+        this.searchSelected = this.searchSelected.bind(this);
     }
 
     componentDidMount() {
+        this.loadSelected(this.state.selected);
         setInterval(() => { this.loadSelected(this.state.selected); }, this.refreshRateMillis);
     }
 
@@ -56,13 +64,11 @@ class OrderEntry extends Component {
     async loadSelected(selected) {
         try {
             const response = await this.api.get(selected, { cancelToken: this.signal.token });
-            console.log(response.data);
-            this.setState({ selectedPrice: response.data.c, stopPrice: response.data.c - 10 });
+            this.setState({ selectedPrice: response.data.c, stopPrice: response.data.c - 10, isLoaded: true });
         }
         catch (err) {
             if (axios.isCancel(err)) {
-                console.log('Error: ', err.message);
-                this.loadSelected(selected);
+                console.log(err);
             }
         }
     }
@@ -92,6 +98,32 @@ class OrderEntry extends Component {
         return this.state.orderType === this.orderTypes.market;
     }
 
+    onSearch(searchtext) {
+        const validFields = symbols.filter(symbol => symbol.toLowerCase().includes(searchtext.toLowerCase()));
+        this.setState({ searchDatasource: validFields });
+    }
+
+    onSearchInput(input) {
+        this.setState({ searchField: input });
+    }
+
+    setNearestSearchResult(event) {
+        const searchtext = event.target.value;
+        const validFields = symbols.filter(symbol => symbol.toLowerCase().includes(searchtext.toLowerCase()));
+        if (validFields.length > 0) {
+            this.setState({ searchField: validFields[0], selected: validFields[0] });
+        }
+        else {
+            this.setState({ searchField: this.state.selected });
+        }
+        this.loadSelected(this.state.selected);
+    }
+
+    searchSelected(selected) {
+        this.setState({ selected });
+        this.loadSelected(selected);
+    }
+
     render() {
         return (
             <Layout>
@@ -106,9 +138,14 @@ class OrderEntry extends Component {
                         </Col>
                         <Col span={6}>
                             Symbol:
-                            <Dropdown.Button overlay={this.symbolMenu()}>
-                                {this.state.selected}
-                            </Dropdown.Button>
+                            <AutoComplete
+                                value={this.state.searchField}
+                                options={this.state.searchDatasource}
+                                onSearch={this.onSearch}
+                                onChange={this.onSearchInput}
+                                onBlur={this.setNearestSearchResult}
+                                onSelect={this.searchSelected}
+                            />
                         </Col>
                         <Col span={6}>
                             Quantity:
@@ -160,7 +197,6 @@ class OrderEntry extends Component {
                     <Row>
                         <Col span={12}>
                             <TextArea placeholder="<COMMENT>" onChange={(event) => {
-                                console.log(event.target.value);
                                 this.setState({ comment: event.target.value })
                             }
                             } />
@@ -169,7 +205,7 @@ class OrderEntry extends Component {
                             <Button
                                 style={{ width: "50%" }}
                                 type="primary"
-                                onClick={this.submitOrder.bind(this)}
+                                onClick={this.submitOrder}
                             >
                                 Submit
                             </Button>
@@ -193,19 +229,16 @@ class OrderEntry extends Component {
             <Menu>
                 <Menu.Item
                     key="buy"
-                    icon={<UserOutlined />}
                     onClick={() => this.setState({ action: this.actions.buy })}
                 >
                     Buy
                 </Menu.Item>
                 <Menu.Item
                     key="sell"
-                    icon={<UserOutlined />}
                     onClick={() => this.setState({ action: this.actions.sell })}
                 >
                     Sell
                 </Menu.Item>
-
             </Menu>
         )
     }
@@ -230,23 +263,6 @@ class OrderEntry extends Component {
                     return (
                         <Menu.Item key={tif} onClick={() => { this.setState({ tif }) }}>
                             {tif}
-                        </Menu.Item>
-                    )
-                })}
-            </Menu>
-        )
-    }
-
-    symbolMenu() {
-        return (
-            <Menu>
-                {symbols.map(symbol => {
-                    return (
-                        <Menu.Item key={symbol} onClick={() => {
-                            this.loadSelected(symbol);
-                            this.setState({ selected: symbol });
-                        }}>
-                            {symbol}
                         </Menu.Item>
                     )
                 })}
