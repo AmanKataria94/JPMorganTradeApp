@@ -11,8 +11,8 @@ const { TextArea } = Input;
 const { Header, Content } = Layout;
 
 class OrderEntry extends Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.actions = {
             buy: 'Buy',
             sell: 'Sell'
@@ -140,7 +140,7 @@ class OrderEntry extends Component {
                             Symbol:
                             <AutoComplete
                                 value={this.state.searchField}
-                                options={this.state.searchDatasource}
+                                dataSource={this.state.searchDatasource}
                                 onSearch={this.onSearch}
                                 onChange={this.onSearchInput}
                                 onBlur={this.setNearestSearchResult}
@@ -227,13 +227,14 @@ class OrderEntry extends Component {
     actionMenu() {
         return (
             <Menu>
-                <Menu.Item
+                <Menu.Item style={{ backgroundColor: "green" }}
                     key="buy"
                     onClick={() => this.setState({ action: this.actions.buy })}
                 >
                     Buy
                 </Menu.Item>
                 <Menu.Item
+                    style={{ backgroundColor: "red" }}
                     key="sell"
                     onClick={() => this.setState({ action: this.actions.sell })}
                 >
