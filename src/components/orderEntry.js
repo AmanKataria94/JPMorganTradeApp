@@ -140,7 +140,7 @@ class OrderEntry extends Component {
                             <ColourDropdown
                                 text={this.state.action}
                                 bgColour={this.getActionButtonColour()}
-                                textColour={"white"}
+                                textColour={'white'}
                                 overlay={this.actionMenu()}
                             />
                         </Col>
