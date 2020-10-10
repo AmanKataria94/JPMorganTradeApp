@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { placeOrder, setUpdated } from '../actions';
 import { AutoComplete, Layout, Dropdown, Menu, Row, Col, InputNumber, Button, Spin } from 'antd';
 import { Input } from 'antd';
+import ColourDropdown from './colourDropdown';
 import Api from '../network/api';
 import axios from 'axios';
 import symbols from '../network/tickerAllowList';
@@ -98,6 +99,10 @@ class OrderEntry extends Component {
         return this.state.orderType === this.orderTypes.market;
     }
 
+    getActionButtonColour() {
+        return this.state.action === this.actions.buy ? 'green' : 'red';
+    }
+
     onSearch(searchtext) {
         const validFields = symbols.filter(symbol => symbol.toLowerCase().includes(searchtext.toLowerCase()));
         this.setState({ searchDatasource: validFields });
@@ -132,9 +137,12 @@ class OrderEntry extends Component {
                     <Row>
                         <Col span={6}>
                             Action:
-                            <Dropdown.Button overlay={this.actionMenu()}>
-                                {this.state.action}
-                            </Dropdown.Button>
+                            <ColourDropdown
+                                text={this.state.action}
+                                bgColour={this.getActionButtonColour()}
+                                textColour={"white"}
+                                overlay={this.actionMenu()}
+                            />
                         </Col>
                         <Col span={6}>
                             Symbol:
